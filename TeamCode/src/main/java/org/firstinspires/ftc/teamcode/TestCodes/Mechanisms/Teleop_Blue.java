@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.TestCodes.Mechanisms;
+import java.lang.Math;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
@@ -67,8 +69,13 @@ public class Teleop_Blue extends LinearOpMode{
         right_intake_sensor = hardwareMap.get(RevColorSensorV3.class, "rightSensor");
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
+//        extension_motor1.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
+//        extension_motor2.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
+
         extension_motor1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         extension_motor2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        extension_motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        extension_motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -155,6 +162,8 @@ public class Teleop_Blue extends LinearOpMode{
             telemetry.addData("manualIntakeFlag = ", manualIntakeFlag);
             telemetry.addData("Encoder 1 count: ", extension_motor1.getCurrentPosition());
             telemetry.addData("Encoder 2 count: ", extension_motor2.getCurrentPosition());
+            telemetry.addData("Motor 1 current: ", extension_motor1.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("Motor 2 current: ", extension_motor2.getCurrent(CurrentUnit.AMPS));
             telemetry.update();
 
 
@@ -164,55 +173,55 @@ public class Teleop_Blue extends LinearOpMode{
             //-------------------------------------------------------------------------
             //-------------------------------------------------------------------------
 
-//            if(gamepad1.right_stick_button){
-//                extension_flag = 1;
-//                counterExtension1 = 0;
-//                counterExtension2 = 0;
-//            }
-//            else if(gamepad1.left_stick_button){
-//                extension_flag = 0;
-//                counterExtension1 = 0;
-//                counterExtension2 = 0;
-//            }
+            if(gamepad1.right_stick_button){
+                extension_flag = 1;
+                counterExtension1 = 0;
+                counterExtension2 = 0;
+            }
+            else if(gamepad1.left_stick_button){
+                extension_flag = 0;
+                counterExtension1 = 0;
+                counterExtension2 = 0;
+            }
             if(gamepad1.right_trigger > 0.7){
-                pos = pos + 7;
+                pos = pos + 15;
             }
             else{
                 pos = pos;
             }
 
             if(gamepad1.left_trigger > 0.7){
-                pos = pos - 7;
+                pos = pos - 15;
             }
             else{
                 pos = pos;
             }
 
-            extendTo(pos);
-//            if(extension_flag == 1){
-//
-//
-////                if(counterExtension1 == 0) {
-////                    seconds.reset();
-////                    counterExtension1 = 1;
-////                }
-////                if(seconds.milliseconds() >= 1200){
-////                    servo_arm.setPosition(1);
-////                    servo_dropper.setPosition(1);
-////                }
-//            }
-//            else if(extension_flag == 0){
-////                extendTo(0);
-////                servo_dropper.setPosition(0.3);
-////                servo_arm.setPosition(0.02);
-////                if(counterExtension2 == 0) {
-////                    seconds.reset();
-////                    counterExtension2 = 1;
-////                }
-////                if(seconds.milliseconds() >= 20){
-////                    extendTo(0);
-////                }
-//            }
+
+            if(extension_flag == 1){
+                extendTo(pos);
+
+                if(counterExtension1 == 0) {
+                    seconds.reset();
+                    counterExtension1 = 1;
+                }
+                if(seconds.milliseconds() >= 1200){
+                    servo_arm.setPosition(1);
+                    servo_dropper.setPosition(1);
+                }
+            }
+            else if(extension_flag == 0){
+                extendTo(0);
+                servo_dropper.setPosition(0.3);
+                servo_arm.setPosition(0.02);
+                if(counterExtension2 == 0) {
+                    seconds.reset();
+                    counterExtension2 = 1;
+                }
+                if(seconds.milliseconds() >= 20){
+                    extendTo(0);
+                }
+            }
 
 
 
@@ -252,10 +261,22 @@ public class Teleop_Blue extends LinearOpMode{
     public void extendTo(int pos){
         extension_motor1.setTargetPosition(pos);
         extension_motor2.setTargetPosition(-pos);
+
         extension_motor2.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         extension_motor1.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-        extension_motor1.setVelocity(900);
-        extension_motor2.setVelocity(900);
+
+        if( Math.abs(extension_motor2.getCurrentPosition() - extension_motor2.getTargetPosition()) < 1){
+            extension_motor2.setVelocity(0);
+        }
+        else{
+            extension_motor2.setVelocity(1500);
+        }
+        if(Math.abs(extension_motor1.getCurrentPosition() - extension_motor1.getTargetPosition()) < 1){
+            extension_motor1.setVelocity(0);
+        }
+        else{
+            extension_motor1.setVelocity(1500);
+        }
     }
 
     public void setIntakeTo(int power){
@@ -270,4 +291,15 @@ public class Teleop_Blue extends LinearOpMode{
             return false;
         }
     }
+    int i_error, prev_error;
+    float KP_catch = 1, KI_catch = 0, KD_catch = 0;
+    public int catchUpPID(int current, int target){
+        int error = target - current;
+        int p_error = error;
+        i_error = error + i_error;
+        int d_error = error - prev_error;
+        return (int) ((KP_catch * p_error) + (KI_catch * i_error) + (KD_catch * d_error));
+    }
+
+
 }
