@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.TestCodes.Mechanisms;
 import java.lang.Math;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -34,14 +32,11 @@ public class Teleop_Blue extends LinearOpMode{
     int extension_flag = 0;
     int intakeFlag = 0, manualIntakeFlag = 0;
     int transferFlag = 0;
-    int droppingFlag = 0;
-    int servoExtensionFlag = 0;
 
     int counterExtension1 = 0, counterExtension2 = 0;
 
     //##################################################################
     //####################### EXTENSION POSITIONS ######################
-    int MAXEXTENSION = -2000;
     int pos = 0;
 
     //##################################################################
@@ -69,8 +64,7 @@ public class Teleop_Blue extends LinearOpMode{
         right_intake_sensor = hardwareMap.get(RevColorSensorV3.class, "rightSensor");
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-//        extension_motor1.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
-//        extension_motor2.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
+
 
         extension_motor1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         extension_motor2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -186,15 +180,9 @@ public class Teleop_Blue extends LinearOpMode{
             if(gamepad1.right_trigger > 0.7){
                 pos = pos + 15;
             }
-            else{
-                pos = pos;
-            }
 
             if(gamepad1.left_trigger > 0.7){
                 pos = pos - 15;
-            }
-            else{
-                pos = pos;
             }
 
 
@@ -284,21 +272,7 @@ public class Teleop_Blue extends LinearOpMode{
     }
 
     public boolean getProximityReading(RevColorSensorV3 sensor, int dist){
-        if(sensor.getDistance(DistanceUnit.MM) < dist){
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-    int i_error, prev_error;
-    float KP_catch = 1, KI_catch = 0, KD_catch = 0;
-    public int catchUpPID(int current, int target){
-        int error = target - current;
-        int p_error = error;
-        i_error = error + i_error;
-        int d_error = error - prev_error;
-        return (int) ((KP_catch * p_error) + (KI_catch * i_error) + (KD_catch * d_error));
+        return sensor.getDistance(DistanceUnit.MM) < dist;
     }
 
 
